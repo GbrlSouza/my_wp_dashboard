@@ -27,7 +27,7 @@ def get_auth_headers():
         "Authorization": f"Basic {token}",
         "Content-Type": "application/json"
     }
-    
+
 def create_xml_from_posts(posts_data):
     root = ET.Element('posts')
     root.set('source', 'WordPress API')
@@ -37,8 +37,12 @@ def create_xml_from_posts(posts_data):
         post_element.set('id', str(post.get('id', '')))
         post_element.set('status', post.get('status', ''))
         
-        ET.SubElement(post_element, 'title').text = post.get('title', {}).get('rendered', '')
-        ET.SubElement(post_element, 'content').text = post.get('content', {}).get('raw', '') or post.get('content', {}).get('rendered', '')
+        title_text_raw = post.get('title', {}).get('raw', post.get('title', {}).get('rendered', ''))
+        content_text_raw = post.get('content', {}).get('raw', post.get('content', {}).get('rendered', ''))
+        
+        ET.SubElement(post_element, 'title_rendered').text = post.get('title', {}).get('rendered', '')
+        ET.SubElement(post_element, 'title_raw').text = title_text_raw
+        ET.SubElement(post_element, 'content_raw').text = content_text_raw
         ET.SubElement(post_element, 'date').text = post.get('date', '')[:10]
         ET.SubElement(post_element, 'link').text = post.get('link', '')
         
@@ -49,24 +53,24 @@ def read_posts_from_xml():
     posts_list = []
     
     if not os.path.exists(XML_FILE_PATH):
-        return None
-
+        return None 
+        
     try:
         tree = ET.parse(XML_FILE_PATH)
         root = tree.getroot()
-
+        
         for post_element in root.findall('post'):
             posts_list.append({
                 'id': int(post_element.get('id', 0)),
                 'status': post_element.get('status', ''),
-                'title': {'rendered': post_element.find('title').text}, 
-                'content': {'raw': post_element.find('content').text}, 
+                'title': {'rendered': post_element.find('title_rendered').text, 'raw': post_element.find('title_raw').text}, 
+                'content': {'rendered': '', 'raw': post_element.find('content_raw').text}, 
                 'date': post_element.find('date').text,
                 'link': post_element.find('link').text
             })
             
         return posts_list
-
+        
     except (ET.ParseError, AttributeError) as e:
         return None
 
