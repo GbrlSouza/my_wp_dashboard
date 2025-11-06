@@ -54,7 +54,6 @@ def read_posts_from_xml():
 
     except ET.ParseError as e:
         print(f"Erro ao analisar o arquivo XML: {e}")
-        
         return None
 
 @app.route('/')
@@ -83,6 +82,7 @@ def dashboard():
         if xml_cache is not None:
             posts_data = xml_cache
             error_message = "Dados carregados com sucesso do cache XML."
+            
         else:
             error_message = "Falha total: Não foi possível conectar à API e o cache XML está indisponível."
 
