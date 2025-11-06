@@ -7,7 +7,6 @@
     <h1 class="h2">Visão Geral do WordPress</h1>
 </div>
 
-{# Bloco para exibir mensagens de erro #}
 {% if error %}
 <div class="alert alert-danger" role="alert">
     🚨 **Erro:** {{ error }}
@@ -28,13 +27,11 @@
             </tr>
         </thead>
         <tbody>
-            {# 🎯 PASSO 2: Iterando sobre a lista de posts (posts) #}
             {% for post in posts %}
             <tr>
                 <td>{{ post.id }}</td>
                 <td>{{ post.title.rendered }}</td> {# O título vem dentro de um objeto 'rendered' #}
                 <td>
-                    {# Exibe o status formatado (publicado, rascunho, etc.) #}
                     <span class="badge 
                         {% if post.status == 'publish' %}bg-success
                         {% elif post.status == 'draft' %}bg-warning
@@ -50,7 +47,6 @@
         </tbody>
     </table>
     {% else %}
-        {# Mensagem exibida se não houver posts ou se a conexão falhar (e error não estiver definido) #}
         {% if not error %}
         <p class="alert alert-info">Nenhum post encontrado ou o site pode estar inacessível.</p>
         {% endif %}
