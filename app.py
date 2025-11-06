@@ -5,8 +5,9 @@ import requests
 import xml.etree.ElementTree as ET
 
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 load_dotenv()
 
@@ -77,7 +78,14 @@ def read_posts_from_xml():
     except (ET.ParseError, AttributeError) as e:
         return None
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_message_category = "warning"
+
 @app.route('/')
+@login_required
 def index():
     headers = get_auth_headers()
     posts_data = []
@@ -104,8 +112,18 @@ def index():
             flash(f"Falha total: Não foi possível conectar à API e o cache XML está indisponível.", 'danger')
 
     return render_template('dashboard.html', posts=posts_data)
+    pass
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User(user_id)
 
 @app.route('/new_post', methods=['GET', 'POST'])
+@login_required
 def create_post():
     if request.method == 'POST':
         title = request.form.get('title')
@@ -136,8 +154,10 @@ def create_post():
             return render_template('post_form.html', action='Criar Novo Post', post=post_data, post_id=None)
 
     return render_template('post_form.html', action='Criar Novo Post', post=None, post_id=None)
+    pass
 
 @app.route('/edit/<int:post_id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(post_id):
     headers = get_auth_headers()
     
@@ -181,8 +201,10 @@ def edit_post(post_id):
             submitted_post_data = {'title': {'rendered': title}, 'content': {'raw': content}, 'status': status}
             
             return render_template('post_form.html', action='Editar Post', post_id=post_id, post=submitted_post_data)
+    pass
 
 @app.route('/delete/<int:post_id>', methods=['POST'])
+@login_required
 def delete_post(post_id):
     headers = get_auth_headers()
     
@@ -198,6 +220,52 @@ def delete_post(post_id):
         flash(f"Erro ao excluir post {post_id}: {error_message}", 'danger')
 
     return redirect(url_for('index'))
+    pass
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password') 
+        
+        auth_url = f"{WP_URL}/users/me"
+        credentials = f"{username}:{password}"
+        
+        token = base64.b64encode(credentials.encode()).decode('utf-8')
+        
+        headers = {
+            "Authorization": f"Basic {token}",
+        }
+        
+        try:
+            response = requests.get(auth_url, headers=headers)
+            response.raise_for_status() 
+
+            user = User(username)
+            
+            login_user(user)
+            
+            flash('Login bem-sucedido!', 'success')
+            
+            return redirect(url_for('index'))
+
+        except requests.RequestException:
+            flash('Usuário ou Senha de Aplicação incorretos.', 'danger')
+            
+            return render_template('login.html')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    
+    flash('Você saiu do sistema.', 'info')
+    
+    return redirect(url_for('login'))
     
 if __name__ == '__main__':
     app.run(debug=True)
