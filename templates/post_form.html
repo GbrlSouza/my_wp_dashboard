@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">{{ action }}</h1>
+    
+    <form method="POST" action="{{ url_for('create_post') if post is none else url_for('edit_post', post_id=post_id) }}">
+        
+        <div class="mb-3">
+            <label for="title" class="form-label">Título</label>
+            <input type="text" class="form-control" id="title" name="title" required
+                   value="{{ post.title.rendered if post and post.title and post.title.rendered else post.title if post and post.title and not post.title.rendered else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="content" class="form-label">Conteúdo</label>
+            <textarea class="form-control" id="content" name="content" rows="10" required>
+                {{ post.content.raw if post and post.content and post.content.raw else post.content.rendered if post and post.content and post.content.rendered else '' }}
+            </textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            {% set current_status = post.status if post and post.status else 'draft' %}
+            <select class="form-select" id="status" name="status" required>
+                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Rascunho (Draft)</option>
+                <option value="publish" {% if current_status == 'publish' %}selected{% endif %}>Publicado (Publish)</option>
+                <option value="private" {% if current_status == 'private' %}selected{% endif %}>Privado (Private)</option>
+            </select>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Salvar {{ 'Post' if post is none else 'Alterações' }}</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
