@@ -22,8 +22,8 @@ Para rodar este projeto, você precisará de:
 ### 1. Clonar o Repositório
 
 ```bash
-git clone [https://github.com/SEU-USUARIO/nome-do-repositorio](https://github.com/SEU-USUARIO/nome-do-repositorio)
-cd nome-do-repositorio
+git clone [https://github.com/GbrlSouza/my_wp_dashboard](https://github.com/GbrlSouza/my_wp_dashboard)
+cd my_wp_dashboard
 ````
 
 ### 2\. Instalar Dependências
