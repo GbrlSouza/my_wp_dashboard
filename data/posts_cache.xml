@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<posts source="WordPress API">
+    <post id="125" status="publish">
+        <title>Meu Primeiro Artigo no Dashboard Python</title>
+        <date>2025-11-06</date>
+        <link>http://seusite.com/meu-primeiro-artigo</link>
+    </post>
+    
+    <post id="124" status="publish">
+        <title>Novas Funcionalidades do WordPress 6.5</title>
+        <date>2025-10-30</date>
+        <link>http://seusite.com/novas-funcionalidades-wp</link>
+    </post>
+    
+    <post id="123" status="draft">
+        <title>Rascunho de E-book (Aguardando Revisão)</title>
+        <date>2025-10-25</date>
+        <link>http://seusite.com/?p=123</link>
+    </post>
+</posts>
