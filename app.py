@@ -5,7 +5,10 @@ import requests
 import xml.etree.ElementTree as ET
 
 from datetime import datetime
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
