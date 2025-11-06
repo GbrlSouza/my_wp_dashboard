@@ -5,17 +5,17 @@ import requests
 import xml.etree.ElementTree as ET
 
 from datetime import datetime
-from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
+from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_aqui'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_key_insegura')
 
-WP_URL = 'http://seusite.com/wp-json/wp/v2'
-WP_USERNAME = "seu_usuario_api"
-WP_APP_PASSWORD = "sua_senha_de_aplicacao"
+WP_URL = os.environ.get('WP_URL', 'http://seusite.com/wp-json/wp/v2')
+WP_USERNAME = os.environ.get('WP_USERNAME', "usuario_default")
+WP_APP_PASSWORD = os.environ.get('WP_APP_PASSWORD', "senha_default")
 
 XML_FILE_PATH = 'data/posts_cache.xml'
 
@@ -30,7 +30,7 @@ def get_auth_headers():
         "Authorization": f"Basic {token}",
         "Content-Type": "application/json"
     }
-
+    
 def create_xml_from_posts(posts_data):
     root = ET.Element('posts')
     root.set('source', 'WordPress API')
@@ -56,12 +56,12 @@ def read_posts_from_xml():
     posts_list = []
     
     if not os.path.exists(XML_FILE_PATH):
-        return None 
-        
+        return None
+
     try:
         tree = ET.parse(XML_FILE_PATH)
         root = tree.getroot()
-        
+
         for post_element in root.findall('post'):
             posts_list.append({
                 'id': int(post_element.get('id', 0)),
@@ -73,12 +73,12 @@ def read_posts_from_xml():
             })
             
         return posts_list
-        
+
     except (ET.ParseError, AttributeError) as e:
         return None
 
 @app.route('/')
-def dashboard():
+def index():
     headers = get_auth_headers()
     posts_data = []
     
@@ -126,7 +126,7 @@ def create_post():
             
             flash(f"Post '{title}' criado com sucesso!", 'success')
             
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('index'))
             
         except requests.exceptions.RequestException as e:
             error_message = response.json().get('message', str(e))
@@ -152,7 +152,7 @@ def edit_post(post_id):
         except requests.exceptions.RequestException as e:
             flash(f"Erro ao buscar post {post_id}: {e}", 'danger')
             
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('index'))
 
     elif request.method == 'POST':
         title = request.form.get('title')
@@ -171,7 +171,7 @@ def edit_post(post_id):
             
             flash(f"Post '{title}' atualizado com sucesso!", 'success')
             
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('index'))
             
         except requests.exceptions.RequestException as e:
             error_message = response.json().get('message', str(e))
@@ -197,7 +197,7 @@ def delete_post(post_id):
         
         flash(f"Erro ao excluir post {post_id}: {error_message}", 'danger')
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('index'))
     
 if __name__ == '__main__':
     app.run(debug=True)
