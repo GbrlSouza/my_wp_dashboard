@@ -7,27 +7,16 @@
     <h1 class="h2">Visão Geral do WordPress</h1>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Total de Posts</div>
-            <div class="card-body">
-                <h5 class="card-title">125</h5> <p class="card-text">Posts publicados em seu site.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-header">Posts Pendentes</div>
-            <div class="card-body">
-                <h5 class="card-title">3</h5> <p class="card-text">Posts aguardando revisão.</p>
-            </div>
-        </div>
-    </div>
-    </div>
+{# Bloco para exibir mensagens de erro #}
+{% if error %}
+<div class="alert alert-danger" role="alert">
+    🚨 **Erro:** {{ error }}
+</div>
+{% endif %}
 
-<h2>Posts Recentes (via API)</h2>
+<h2>Posts Recentes (5 Mais Novos)</h2>
 <div class="table-responsive">
+    {% if posts %}
     <table class="table table-striped table-sm">
         <thead>
             <tr>
@@ -35,22 +24,36 @@
                 <th>Título</th>
                 <th>Status</th>
                 <th>Data</th>
+                <th>Ver Site</th>
             </tr>
         </thead>
         <tbody>
+            {# 🎯 PASSO 2: Iterando sobre a lista de posts (posts) #}
+            {% for post in posts %}
             <tr>
-                <td>101</td>
-                <td>Artigo de Exemplo 1</td>
-                <td>Publicado</td>
-                <td>2025-11-04</td>
+                <td>{{ post.id }}</td>
+                <td>{{ post.title.rendered }}</td> {# O título vem dentro de um objeto 'rendered' #}
+                <td>
+                    {# Exibe o status formatado (publicado, rascunho, etc.) #}
+                    <span class="badge 
+                        {% if post.status == 'publish' %}bg-success
+                        {% elif post.status == 'draft' %}bg-warning
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ post.status | capitalize }}
+                    </span>
+                </td>
+                <td>{{ post.date[:10] }}</td> {# Pega só a data (exclui o tempo) #}
+                <td><a href="{{ post.link }}" target="_blank" class="btn btn-sm btn-outline-info">Ver</a></td>
             </tr>
-            <tr>
-                <td>102</td>
-                <td>Novo Recurso</td>
-                <td>Rascunho</td>
-                <td>2025-11-03</td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
+    {% else %}
+        {# Mensagem exibida se não houver posts ou se a conexão falhar (e error não estiver definido) #}
+        {% if not error %}
+        <p class="alert alert-info">Nenhum post encontrado ou o site pode estar inacessível.</p>
+        {% endif %}
+    {% endif %}
 </div>
 {% endblock %}
